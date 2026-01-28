@@ -1,0 +1,10 @@
+plan is to build an idea for better parking service, if a person has free parking space they can put if up for sale
+
+
+pages frontend-login,signup
+   search for parking,list for parking,
+   my parkings,
+   parked vehicles
+
+
+backend-authentication,users,db 
