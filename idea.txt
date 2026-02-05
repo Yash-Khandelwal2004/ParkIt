@@ -7,4 +7,4 @@ pages frontend-login,signup
    parked vehicles
 
 
-backend-authentication,users,db 
+backend-authentication,users,db ,store parking, remove parkings,
