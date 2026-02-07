@@ -1,10 +1,10 @@
-const User = require("../models/User");
+const User = require("../models/User-model");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 const registerUser = async (req, res) => {
   try {
-    const { username, email, password } = req.body();
+    const {username, email, password} = req.body;
 
     const checkExistingUser = await User.findOne({
       $or: [{ email }],
@@ -18,11 +18,11 @@ const registerUser = async (req, res) => {
       });
     }
 
-    const gensalt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     const newlyCreatedUser = new User({
-      name: username,
+      username: username,
       email: email,
       password: hashedPassword,
     });
@@ -41,7 +41,7 @@ const registerUser = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(e);
+    console.log(error);
     res.status(500).json({
       success: false,
       message: "Some error occured! Please try again",
@@ -51,8 +51,8 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   try {
-    const { username, email } = req.body;
-    const userExists = await User.findOne({ username });
+    const {email,password } = req.body;
+    const userExists = await User.findOne({ email });
     if (!userExists) {
       return res.status(400).json({
         success: false,
@@ -90,5 +90,77 @@ const loginUser = async (req, res) => {
   }
 };
 
+const changePassword = async (req, res) => {
+  try {
+    const userId = req.params.id;
 
-module.exports={registerUser,loginUser};
+    //extract old and new password;
+    const { oldPassword , newPassword } = req.body;
+
+    //find the current logged in user
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    //check if the old password is correct
+    const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(400).json({
+        success: false,
+        message: "Old password is not correct! Please try again.",
+      });
+    }
+
+    //hash the new password here
+    const salt = await bcrypt.genSalt(10);
+    const newHashedPassword = await bcrypt.hash(newPassword, salt);
+
+    //update user password
+    user.password = newHashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Some error occured! Please try again",
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const getCurrentUserID = req.params.id;
+    const deletedUser = await User.findByIdAndDelete(getCurrentUserID);
+
+    if (!deletedUser) {
+      res.status(404).json({
+        success: false,
+        message: "User is not found with this ID",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: deletedUser,
+    });
+  } catch (e) {
+    console.log(e);
+    res.status(500).json({
+      success: false,
+      message: "Something went wrong! Please try again",
+    });
+  }
+};
+
+module.exports={registerUser,loginUser,changePassword,deleteUser};
