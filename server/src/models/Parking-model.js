@@ -25,8 +25,15 @@ const ParkingSchema=new mongoose.Schema({
         required:true,
         enum: ["two wheeler", "four wheeler"],
         default:"four wheeler",
-    }
+    },
+    renter:{
+        type:mongoose.Schema.Types.ObjectId,
+        res:"User",
+        require:true,
+    },
 
-})
+
+},
+  { timestamps: true })
 
 module.exports=mongoose.model("Parking",ParkingSchema)

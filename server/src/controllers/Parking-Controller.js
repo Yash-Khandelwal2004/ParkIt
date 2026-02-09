@@ -20,6 +20,7 @@ const registerParking = async (req, res) => {
       count: count,
       fee: fee,
       type:type,
+      renter:req.userInfo.userId,
     });
 
     await newlyCreatedParking.save();
@@ -124,5 +125,6 @@ module.exports={
   registerParking,
   deleteParking,
   getAllParkings,
-  getSingleParkingById
+  getSingleParkingById,
+
 };
