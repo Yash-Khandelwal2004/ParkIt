@@ -1,70 +1,90 @@
+const mongoose = require("mongoose");
 const Parking = require("../models/Parking-model");
 
 const registerParking = async (req, res) => {
   try {
-    const { address, owner, fee, count,type } = req.body;
+    const { address, fee, count, type } = req.body;
 
-    const checkforExistingParking = await Parking.findOne({
-      $or: [{ address }],
-    });
-    if (checkforExistingParking) {
+    // 1️⃣ Basic validation
+    if (!address || !fee || !count || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "address, fee, count and type are required",
+      });
+    }
+
+    if (fee < 0 || count <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid fee or slot count",
+      });
+    }
+
+    // 2️⃣ Check existing parking by address
+    const existingParking = await Parking.findOne({ address });
+    if (existingParking) {
       return res.status(400).json({
         success: false,
         message: "Parking address already exists",
       });
     }
 
-    const newlyCreatedParking = new Parking({
-      owner: owner,
-      address: address,
-      count: count,
-      fee: fee,
-      type:type,
-      renter:req.userInfo.userId,
+    // 3️⃣ Create parking
+    const newlyCreatedParking = await Parking.create({
+      owner: req.userInfo.userId,     // from auth middleware
+      renter: req.userInfo.userId,    // linked user
+      address,
+      fee,
+      count,
+      availableSlots: count,          // IMPORTANT for booking logic
+      type,
     });
 
-    await newlyCreatedParking.save();
-
-    if (newlyCreatedParking) {
-      res.status(201).json({
-        success: true,
-        message: "Parking registered successfully!",
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: "Unable to register! please try again.",
-      });
-    }
+    return res.status(201).json({
+      success: true,
+      message: "Parking registered successfully!",
+      data: newlyCreatedParking,
+    });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    console.error(e);
+    return res.status(500).json({
       success: false,
-      message: "some error occured please try again",
+      message: "Some error occurred, please try again",
     });
   }
 };
 
+
 const deleteParking = async (req, res) => {
   try {
-    const getCurrentParkingId = req.params.id;
-    const deleteParking = await Parking.findByIdAndDelete(getCurrentParkingId);
+    const { id } = req.params;
 
-    if (!deleteParking) {
-      res.status(404).json({
+    // validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
         success: false,
-        message: "Parking is not found with this id",
+        message: "Invalid parking ID",
       });
     }
-    res.status(200).json({
+
+    const deletedParking = await Parking.findByIdAndDelete(id);
+
+    if (!deletedParking) {
+      return res.status(404).json({
+        success: false,
+        message: "Parking not found with this ID",
+      });
+    }
+
+    return res.status(200).json({
       success: true,
-      data: deleteParking,
+      data: deletedParking,
     });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({
+    console.error(error);
+    return res.status(500).json({
       success: false,
-      message: "Something went wrong please try again",
+      message: "Something went wrong, please try again",
     });
   }
 };
@@ -72,48 +92,51 @@ const deleteParking = async (req, res) => {
 
 const getAllParkings = async (req, res) => {
   try {
-    const allParkings = await Parking.find({});
-    if (allParkings?.length > 0) {
-      res.status(200).json({
-        success: true,
-        message: "List of Parkings fetched successfully",
-        data: allParkings,
-      });
-    } else {
-      res.status(404).json({
-        success: false,
-        message: "No Parkings found in collection",
-      });
-    }
+    const allParkings = await Parking.find({}).populate("owner renter", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: "List of parkings fetched successfully",
+      data: allParkings,
+    });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    console.error(e);
+    return res.status(500).json({
       success: false,
       message: "Something went wrong! Please try again",
     });
   }
 };
+
 
 const getSingleParkingById = async (req, res) => {
   try {
-    const getCurrentParkingID = req.params.id;
-    const ParkingDetailsByID = await Parking.findById(getCurrentParkingID);
+    const { id } = req.params;
 
-    if (!ParkingDetailsByID) {
-      return res.status(404).json({
+    // validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
         success: false,
-        message:
-          "Parking with the current ID is not found! Please try with a different ID",
+        message: "Invalid parking ID",
       });
     }
 
-    res.status(200).json({
+    const parkingDetails = await Parking.findById(id).populate("owner renter", "name email");
+
+    if (!parkingDetails) {
+      return res.status(404).json({
+        success: false,
+        message: "Parking not found with this ID",
+      });
+    }
+
+    return res.status(200).json({
       success: true,
-      data: ParkingDetailsByID,
+      data: parkingDetails,
     });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({
+    console.error(e);
+    return res.status(500).json({
       success: false,
       message: "Something went wrong! Please try again",
     });
@@ -121,10 +144,9 @@ const getSingleParkingById = async (req, res) => {
 };
 
 
-module.exports={
+module.exports = {
   registerParking,
   deleteParking,
   getAllParkings,
   getSingleParkingById,
-
 };
