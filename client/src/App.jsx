@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import './App.css'
 import MainPage from './Pages/Main-Page';
 import SearchPage from './Pages/Search-Parking-Page';
-
+import Signup from "./auth/Sign-up-auth";
+import Signin from "./auth/Sign-in-auth";
 
 function App() {
 
@@ -11,6 +12,8 @@ function App() {
   return (
     <BrowserRouter>
     <Routes>
+      <Route path='/signup' element={<Signup/>}/>
+      <Route path='/signin' element={<Signin/>}/>
       <Route path="/" element={<MainPage/>} />
       <Route path='city' element={<SearchPage/>}/>
     </Routes>

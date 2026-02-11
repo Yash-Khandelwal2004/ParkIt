@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express=require('express')
+const cors = require('cors');
 const connectToDb=require('./src/database/db')
 const UserRoutes=require('./src/routes/User-Auth-Routes')
 const ParkingRoutes=require('./src/routes/Parking-Route')
@@ -8,7 +9,7 @@ const BookingRoutes=require('./src/routes/Booking-Route')
 
 const app=express();
 
-
+app.use(cors());
 connectToDb();
 
 // const PORT = process.env.PORT || 4000; 
