@@ -4,16 +4,15 @@ const Parking = require("../models/Parking-model");
 
 const createBooking = async (req, res) => {
   try {
-    const { parkingId, count, startTime, endTime } = req.body;
+    const { parkingId } = req.params;   
+    const { count, startTime, endTime } = req.body;
 
-    // 1️⃣ Basic validation
-    if (!parkingId || !count || !startTime || !endTime) {
+    if (!count || !startTime || !endTime) {
       return res.status(400).json({
-        message: "parkingId, count, startTime and endTime are required",
+        message: "count, startTime and endTime are required",
       });
     }
 
-    // 2️⃣ Validate ObjectId format
     if (!mongoose.Types.ObjectId.isValid(parkingId)) {
       return res.status(400).json({ message: "Invalid parkingId format" });
     }
@@ -27,63 +26,32 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 3️⃣ 🔍 Check parking exists in DB
-    const existingParking = await Parking.findById(parkingId);
-
-    if (!existingParking) {
-      return res.status(404).json({
-        message: "Parking not found",
-      });
-    }
-
-    // 4️⃣ Atomically check slots and decrement
+    // 🔒 Atomic slot check
     const parking = await Parking.findOneAndUpdate(
-      {
-        _id: parkingId,
-        availableSlots: { $gte: count },
-      },
-      {
-        $inc: { availableSlots: -count },
-      },
+      { _id: parkingId, availableSlots: { $gte: count } },
+      { $inc: { availableSlots: -count } },
       { new: true }
     );
 
-    // 5️⃣ If slots insufficient
     if (!parking) {
       return res.status(400).json({
         message: "Not enough parking slots available",
       });
     }
 
-    // 6️⃣ Calculate price
     const durationHours = (end - start) / (1000 * 60 * 60);
-
-    if (durationHours <= 0) {
-      // rollback slot reduction (extra safety)
-      await Parking.findByIdAndUpdate(parkingId, {
-        $inc: { availableSlots: count },
-      });
-
-      return res.status(400).json({
-        message: "Invalid booking duration",
-      });
-    }
-
     const priceAtBooking = durationHours * parking.fee * count;
 
-    // 7️⃣ Create booking
-const booking = await Booking.create({
-  user: req.userInfo.userId,
-  parking: parkingId,
-  count,
-  startTime: start,
-  endTime: end,
-  priceAtBooking,
-  status: "confirmed",
-});
+    const booking = await Booking.create({
+      user: req.userInfo.userId,
+      parking: parkingId,
+      count,
+      startTime: start,
+      endTime: end,
+      priceAtBooking,
+      status: "confirmed",
+    });
 
-
-    // 8️⃣ Response
     return res.status(201).json({
       message: "Parking booked successfully",
       booking,

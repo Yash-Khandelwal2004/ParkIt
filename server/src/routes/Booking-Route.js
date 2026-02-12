@@ -6,7 +6,7 @@ const authMiddleware = require('../middleware/Auth-middleware');
 
 const router=express.Router();
 
-router.post("/book-parking",authMiddleware,createBooking)
+router.post("/book-parking/:parkingId",authMiddleware,createBooking)
 router.delete("/cancel-parking/:bookingId",authMiddleware,deleteBooking)
 
 module.exports=router;

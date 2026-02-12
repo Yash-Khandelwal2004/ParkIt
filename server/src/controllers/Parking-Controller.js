@@ -143,10 +143,57 @@ const getSingleParkingById = async (req, res) => {
   }
 };
 
+const getMyOwnedParkings = async (req, res) => {
+  try {
+    const userId = req.userInfo.userId;
+
+    const myParkings = await Parking.find({ owner: userId })
+      .populate("owner renter", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: "User's owned parkings fetched successfully",
+      count: myParkings.length,
+      data: myParkings,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong, please try again",
+    });
+  }
+};
+
+
+const getMyBookedParkings = async (req, res) => {
+  try {
+    const userId = req.userInfo.userId;
+
+    const bookedParkings = await Parking.find({ renter: userId })
+      .populate("owner renter", "name email");
+
+    return res.status(200).json({
+      success: true,
+      message: "User's booked parkings fetched successfully",
+      count: bookedParkings.length,
+      data: bookedParkings,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong, please try again",
+    });
+  }
+};
+
 
 module.exports = {
   registerParking,
   deleteParking,
   getAllParkings,
   getSingleParkingById,
+  getMyOwnedParkings,
+  getMyBookedParkings,
 };
