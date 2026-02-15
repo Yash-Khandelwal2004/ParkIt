@@ -26,7 +26,6 @@ const createBooking = async (req, res) => {
       });
     }
 
-    // 🔒 Atomic slot check
     const parking = await Parking.findOneAndUpdate(
       { _id: parkingId, availableSlots: { $gte: count } },
       { $inc: { availableSlots: -count } },

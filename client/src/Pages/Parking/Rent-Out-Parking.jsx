@@ -13,7 +13,7 @@ const [type, setType] = useState("four wheeler");
     const rentingData = { address, fee, count, type };
 
     try {
-      // ⭐ get token stored after login
+
       const token = localStorage.getItem("token");
 
       const response = await fetch(
@@ -22,7 +22,7 @@ const [type, setType] = useState("four wheeler");
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // ⭐ REQUIRED
+            Authorization: `Bearer ${token}`, 
           },
           body: JSON.stringify(rentingData),
         }
@@ -36,7 +36,6 @@ const [type, setType] = useState("four wheeler");
 
       console.log("Success:", data);
 
-      // clear fields
       setAddress("");
       setFee("");
       setCount("");
@@ -62,7 +61,7 @@ const [type, setType] = useState("four wheeler");
         placeholder="Fee"
       />
 
-      {/* ❌ BUG FIXED HERE */}
+    
       <input
         type="number"
         value={count}
