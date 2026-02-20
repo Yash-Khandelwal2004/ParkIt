@@ -72,28 +72,25 @@ const deleteBooking = async (req, res) => {
 
     console.log("bookingId received →", bookingId);
 
-    // 1️⃣ bookingId required
+
     if (!bookingId) {
       return res.status(400).json({
         message: "bookingId parameter is required in URL",
       });
     }
 
-    // 2️⃣ validate Mongo ObjectId format
     if (!mongoose.Types.ObjectId.isValid(String(bookingId))) {
       return res.status(400).json({
         message: "Invalid bookingId format",
       });
     }
 
-    // 3️⃣ auth check
     if (!req.userInfo || !req.userInfo.userId) {
       return res.status(401).json({
         message: "Unauthorized: user not authenticated",
       });
     }
 
-    // 4️⃣ find booking
     const booking = await Booking.findById(bookingId);
 
     if (!booking) {
@@ -102,14 +99,12 @@ const deleteBooking = async (req, res) => {
       });
     }
 
-    // 5️⃣ only owner can delete
     if (booking.user.toString() !== req.userInfo.userId) {
       return res.status(403).json({
         message: "Not authorized to delete this booking",
       });
     }
 
-    // 6️⃣ restore parking slots BEFORE delete
     const parking = await Parking.findByIdAndUpdate(
       booking.parking,
       { $inc: { availableSlots: booking.count } },
@@ -122,10 +117,8 @@ const deleteBooking = async (req, res) => {
       });
     }
 
-    // 7️⃣ delete booking permanently
     await Booking.findByIdAndDelete(bookingId);
 
-    // 8️⃣ success response
     return res.status(200).json({
       message: "Booking deleted successfully",
       deletedBookingId: bookingId,
@@ -140,7 +133,40 @@ const deleteBooking = async (req, res) => {
   }
 };
 
+
+const getMyBookings = async (req, res) => {
+  try {
+    const userId = req.userInfo.userId;
+
+    const bookings = await Booking.find({ user: userId })
+      .populate({
+        path: "parking",
+        populate: {
+          path: "owner",
+          select: "name email",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      success: true,
+      message: "User's bookings fetched successfully",
+      count: bookings.length,
+      data: bookings,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong, please try again",
+    });
+  }
+};
+
+
+
 module.exports = {
   createBooking,
   deleteBooking,
+  getMyBookings
 };

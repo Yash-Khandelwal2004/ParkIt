@@ -58,7 +58,6 @@ export default function Navbar() {
     return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
   };
 
-  // Recalculate dropdown position whenever it opens
   useEffect(() => {
     if (dropdownOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
@@ -69,12 +68,10 @@ export default function Navbar() {
     }
   }, [dropdownOpen]);
 
-  // Close on outside click
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = (e) => {
       if (buttonRef.current && !buttonRef.current.contains(e.target)) {
-        // check if click is inside the portal dropdown
         const portalEl = document.getElementById("navbar-dropdown-portal");
         if (portalEl && portalEl.contains(e.target)) return;
         setDropdownOpen(false);
@@ -84,7 +81,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, [dropdownOpen]);
 
-  // Close on scroll
   useEffect(() => {
     if (!dropdownOpen) return;
     const handler = () => setDropdownOpen(false);
@@ -207,7 +203,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* ── DROPDOWN PORTAL — renders at document.body level, never overlapped ── */}
       {dropdownOpen && user && createPortal(
         <div
           id="navbar-dropdown-portal"

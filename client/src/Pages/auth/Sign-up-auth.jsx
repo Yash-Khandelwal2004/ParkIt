@@ -35,7 +35,6 @@ const Signup = () => {
       console.log('Success:', data);
       setSuccess(true);
 
-      // clear fields
       setUsername('');
       setEmail('');
       setPassword('');
@@ -332,7 +331,6 @@ const Signup = () => {
         </p>
       </div>
 
-      {/* Spinner keyframe + placeholder color */}
       <style>{`
         @keyframes spin {
           from { transform: rotate(0deg); }

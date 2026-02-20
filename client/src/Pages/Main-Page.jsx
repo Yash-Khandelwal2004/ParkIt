@@ -64,14 +64,14 @@ export default function MainPage() {
             </button>
 
             {/* Stats */}
-            <div style={{ display: "flex", gap: "40px", marginTop: "48px", paddingTop: "40px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+            {/* <div style={{ display: "flex", gap: "40px", marginTop: "48px", paddingTop: "40px", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
               {[["500+", "Spots"], ["2min", "Avg. Booking"], ["4.9★", "Rating"]].map(([val, label]) => (
                 <div key={label}>
                   <div style={{ fontSize: "26px", fontWeight: "800", color: "#fbbf24" }}>{val}</div>
                   <div style={{ fontSize: "11px", color: "rgba(253,230,138,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: "4px" }}>{label}</div>
                 </div>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Right Section — Card */}
@@ -120,7 +120,7 @@ export default function MainPage() {
 
             <div style={{ margin: "28px 0 20px", borderTop: "1px solid rgba(255,255,255,0.07)" }} />
             <p style={{ textAlign: "center", fontSize: "12px", color: "rgba(253,230,138,0.3)", letterSpacing: "0.04em" }}>
-              Trusted by 10,000+ drivers across the city
+             Your city. Your spot. Your time.
             </p>
           </div>
         </div>

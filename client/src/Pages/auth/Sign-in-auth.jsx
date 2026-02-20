@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
 
 const Signin = () => {
-  // ✅ useAuth must be inside the component, not outside
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -32,14 +31,11 @@ const Signin = () => {
         throw new Error(data.message || "Something went wrong");
       }
 
-      // ✅ Use context login() so the rest of the app knows the user is signed in
-      // Adjust data.user to match whatever your backend returns (e.g. data.user, data.profile, etc.)
       login(data.accessToken, data.user);
 
       setEmail("");
       setPassword("");
 
-      // ✅ Redirect to home after successful login
       navigate("/");
 
     } catch (error) {

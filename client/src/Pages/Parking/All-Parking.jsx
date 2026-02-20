@@ -11,7 +11,6 @@ const AllParkings = () => {
 
   const navigate = useNavigate();
 
-  // Fetch all parkings
   useEffect(() => {
     const fetchParkings = async () => {
       try {

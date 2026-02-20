@@ -6,6 +6,7 @@ const MyOwnedParkings = () => {
   const [parkings, setParkings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +34,32 @@ const MyOwnedParkings = () => {
 
     fetchMyParkings();
   }, []);
+
+  const handleDeleteParking = async (parkingId) => {
+    setDeletingId(parkingId);
+    setError("");
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`http://localhost:3000/api/parking/delete/${parkingId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Deletion failed");
+
+      // Remove from UI instantly on success
+      setParkings((prev) => prev.filter((p) => p._id !== parkingId));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   return (
     <div
@@ -78,7 +105,7 @@ const MyOwnedParkings = () => {
 
         {/* Error */}
         {error && (
-          <div style={{ padding: "16px 20px", borderRadius: "12px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5", fontSize: "14px", display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ padding: "16px 20px", borderRadius: "12px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", color: "#fca5a5", fontSize: "14px", display: "flex", alignItems: "center", gap: "10px", marginBottom: "20px" }}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" /><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
             {error}
           </div>
@@ -161,7 +188,7 @@ const MyOwnedParkings = () => {
 
                 {/* Renter info or no-booking message */}
                 {parking.renter ? (
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px", borderRadius: "10px", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "12px 16px", borderRadius: "10px", background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)", marginBottom: "16px" }}>
                     <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "linear-gradient(135deg, rgba(245,158,11,0.3), rgba(217,119,6,0.2))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: "700", color: "#fbbf24", flexShrink: 0 }}>
                       {parking.renter?.name?.charAt(0)?.toUpperCase() || "R"}
                     </div>
@@ -172,13 +199,60 @@ const MyOwnedParkings = () => {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderRadius: "10px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(74,222,128,0.15)", color: "rgba(134,239,172,0.7)", fontSize: "13px", fontWeight: "600" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "12px 16px", borderRadius: "10px", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(74,222,128,0.15)", color: "rgba(134,239,172,0.7)", fontSize: "13px", fontWeight: "600", marginBottom: "16px" }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                       <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                     No booking yet — your spot is open
                   </div>
                 )}
+
+                {/* ── DELETE PARKING BUTTON ── */}
+                <button
+                  onClick={() => handleDeleteParking(parking._id)}
+                  disabled={deletingId === parking._id}
+                  style={{
+                    width: "100%", padding: "12px", borderRadius: "10px", fontSize: "14px", fontWeight: "700",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: "8px",
+                    background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)",
+                    color: deletingId === parking._id ? "rgba(252,165,165,0.4)" : "#fca5a5",
+                    cursor: deletingId === parking._id ? "not-allowed" : "pointer",
+                    transition: "all 0.2s", fontFamily: "inherit", boxSizing: "border-box",
+                  }}
+                  onMouseEnter={e => {
+                    if (deletingId !== parking._id) {
+                      e.currentTarget.style.background = "rgba(239,68,68,0.2)";
+                      e.currentTarget.style.borderColor = "rgba(239,68,68,0.55)";
+                      e.currentTarget.style.color = "#f87171";
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (deletingId !== parking._id) {
+                      e.currentTarget.style.background = "rgba(239,68,68,0.1)";
+                      e.currentTarget.style.borderColor = "rgba(239,68,68,0.3)";
+                      e.currentTarget.style.color = "#fca5a5";
+                    }
+                  }}
+                >
+                  {deletingId === parking._id ? (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" style={{ animation: "spin 1s linear infinite" }}>
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="40" strokeDashoffset="10" strokeLinecap="round" />
+                      </svg>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                        <polyline points="3 6 5 6 21 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M10 11v6M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                        <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Remove Listing
+                    </>
+                  )}
+                </button>
               </div>
             ))}
           </div>

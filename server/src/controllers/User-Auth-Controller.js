@@ -94,10 +94,10 @@ const changePassword = async (req, res) => {
   try {
     const userId = req.params.id;
 
-    //extract old and new password;
+
     const { oldPassword , newPassword } = req.body;
 
-    //find the current logged in user
+    
     const user = await User.findById(userId);
 
     if (!user) {
@@ -107,7 +107,7 @@ const changePassword = async (req, res) => {
       });
     }
 
-    //check if the old password is correct
+
     const isPasswordMatch = await bcrypt.compare(oldPassword, user.password);
 
     if (!isPasswordMatch) {
@@ -117,11 +117,9 @@ const changePassword = async (req, res) => {
       });
     }
 
-    //hash the new password here
     const salt = await bcrypt.genSalt(10);
     const newHashedPassword = await bcrypt.hash(newPassword, salt);
 
-    //update user password
     user.password = newHashedPassword;
     await user.save();
 

@@ -12,17 +12,13 @@ export function AuthProvider({ children }) {
       const savedUser = localStorage.getItem("user");
 
       if (token) {
-        // If we have a saved user object, parse it
-        // If not, create a minimal user object just from the token so auth still works
         if (savedUser && savedUser !== "undefined" && savedUser !== "null") {
           setUser(JSON.parse(savedUser));
         } else {
-          // Fallback: token exists but no user data — still mark as logged in
           setUser({ name: "User", email: "" });
         }
       }
     } catch (e) {
-      // If anything goes wrong parsing, clear storage and start fresh
       localStorage.removeItem("token");
       localStorage.removeItem("user");
     } finally {
@@ -35,7 +31,6 @@ export function AuthProvider({ children }) {
 
     localStorage.setItem("token", token);
 
-    // Safely store user data — even if backend doesn't return a user object
     const safeUser = userData || { name: "User", email: "" };
     localStorage.setItem("user", JSON.stringify(safeUser));
 
@@ -48,7 +43,6 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  // Don't render children until we've checked localStorage
   if (loading) return null;
 
   return (
