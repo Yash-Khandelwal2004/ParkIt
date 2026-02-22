@@ -96,7 +96,7 @@ parkit/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Yash-Khandelwal2004/parkit.git
+git clone https://github.com/Yash-Khandelwal2004/IarkIt.git
 cd parkit
 ```
 
@@ -115,7 +115,6 @@ Create a `.env` file in the `server/` directory:
 PORT=3000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_super_secret_jwt_key
-JWT_EXPIRES_IN=7d
 ```
 
 Start the backend server:
@@ -256,7 +255,7 @@ Please make sure your code is clean, consistent with the existing style, and tes
 
 ## 🐛 Found a Bug?
 
-Open an [issue](https://github.com/Yash-Khandelwal2004/parkit/issues) with:
+Open an [issue](https://github.com/Yash-Khandelwal2004/ParkIt/issues) with:
 - What you expected to happen
 - What actually happened
 - Steps to reproduce
