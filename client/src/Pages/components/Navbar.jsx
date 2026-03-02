@@ -53,9 +53,9 @@ export default function Navbar() {
   const buttonRef = useRef(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, right: 0 });
 
-  const getInitials = (name) => {
-    if (!name) return "U";
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const getInitials = (user) => {
+    const str = user?.username || user?.name || "U";
+    return str.slice(0, 2).toUpperCase();
   };
 
   useEffect(() => {
@@ -114,7 +114,6 @@ export default function Navbar() {
           borderBottom: "1px solid rgba(255,180,60,0.2)",
         }}
       >
-        {/* Logo */}
         <div
           onClick={() => navigate("/")}
           style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}
@@ -136,7 +135,6 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* Right side */}
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           {user ? (
             <button
@@ -158,10 +156,10 @@ export default function Navbar() {
                   fontSize: "13px", fontWeight: "700", color: "#1a0a00", flexShrink: 0,
                 }}
               >
-                {getInitials(user.name)}
+                {getInitials(user)}
               </div>
               <span style={{ fontSize: "14px", fontWeight: "600", color: "#fde68a" }}>
-                {user.name?.split(" ")[0] || "Profile"}
+                {user.username || user.name?.split(" ")[0] || "Profile"}
               </span>
               <svg
                 width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -220,13 +218,13 @@ export default function Navbar() {
             zIndex: 99999,
           }}
         >
-          {/* User info */}
+       
           <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-            <div style={{ fontSize: "13px", fontWeight: "700", color: "#fff7ed" }}>{user.name || "User"}</div>
+            <div style={{ fontSize: "13px", fontWeight: "700", color: "#fff7ed" }}>{user.username || user.name || "User"}</div>
             <div style={{ fontSize: "11px", color: "rgba(253,230,138,0.4)", marginTop: "2px" }}>{user.email || ""}</div>
           </div>
 
-          {/* Menu items */}
+          
           <div style={{ padding: "8px" }}>
             {dropdownItems.map((item) => (
               <button
