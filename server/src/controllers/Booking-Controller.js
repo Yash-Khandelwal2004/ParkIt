@@ -4,7 +4,7 @@ const Parking = require("../models/Parking-model");
 
 const createBooking = async (req, res) => {
   try {
-    const { parkingId } = req.params;   
+    const { parkingId } = req.params;
     const { count, startTime, endTime } = req.body;
 
     if (!count || !startTime || !endTime) {
@@ -26,20 +26,32 @@ const createBooking = async (req, res) => {
       });
     }
 
-    const parking = await Parking.findOneAndUpdate(
+    const parking = await Parking.findById(parkingId);
+
+    if (!parking) {
+      return res.status(404).json({ message: "Parking not found" });
+    }
+
+    if (parking.owner.toString() === req.userInfo.userId.toString()) {
+      return res.status(403).json({
+        message: "You cannot book your own parking spot",
+      });
+    }
+
+    const updatedParking = await Parking.findOneAndUpdate(
       { _id: parkingId, availableSlots: { $gte: count } },
       { $inc: { availableSlots: -count } },
       { new: true }
     );
 
-    if (!parking) {
+    if (!updatedParking) {
       return res.status(400).json({
         message: "Not enough parking slots available",
       });
     }
 
     const durationHours = (end - start) / (1000 * 60 * 60);
-    const priceAtBooking = durationHours * parking.fee * count;
+    const priceAtBooking = durationHours * updatedParking.fee * count;
 
     const booking = await Booking.create({
       user: req.userInfo.userId,
@@ -54,8 +66,9 @@ const createBooking = async (req, res) => {
     return res.status(201).json({
       message: "Parking booked successfully",
       booking,
-      remainingSlots: parking.availableSlots,
+      remainingSlots: updatedParking.availableSlots,
     });
+
   } catch (error) {
     return res.status(500).json({
       message: "Server error",
@@ -63,8 +76,6 @@ const createBooking = async (req, res) => {
     });
   }
 };
-
-
 
 const deleteBooking = async (req, res) => {
   try {
